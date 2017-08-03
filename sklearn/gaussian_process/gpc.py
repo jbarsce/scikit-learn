@@ -262,12 +262,13 @@ class _BinaryGaussianProcessClassifierLaplace(BaseEstimator):
 
         return np.where(f_star > 0, self.classes_[1], self.classes_[0])
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, return_mean_variance=False):
         """Return probability estimates for the test vector X.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
+        return_mean_variance: bool, default = False
 
         Returns
         -------
@@ -299,7 +300,10 @@ class _BinaryGaussianProcessClassifierLaplace(BaseEstimator):
             / (2 * np.sqrt(var_f_star * 2 * np.pi))
         pi_star = (COEFS * integrals).sum(axis=0) + .5 * COEFS.sum()
 
-        return np.vstack((1 - pi_star, pi_star)).T
+        if return_mean_variance:
+            return np.vstack((1 - pi_star, pi_star)).T, f_star, var_f_star
+        else:
+            return np.vstack((1 - pi_star, pi_star)).T
 
     def log_marginal_likelihood(self, theta=None, eval_gradient=False):
         """Returns log-marginal likelihood of theta for training data.
@@ -638,12 +642,18 @@ class GaussianProcessClassifier(BaseEstimator, ClassifierMixin):
         X = check_array(X)
         return self.base_estimator_.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, return_mean_and_variance=False):
         """Return probability estimates for the test vector X.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
+            Query points where the GP is evaluated
+
+        return_mean_and_variance: bool, default: False
+            If True and the number of classes is 2, the mean
+            and the variance of the predictive distribution
+            at the query points are returned.
 
         Returns
         -------
@@ -658,7 +668,11 @@ class GaussianProcessClassifier(BaseEstimator, ClassifierMixin):
                              "predicting probability estimates. Use "
                              "one_vs_rest mode instead.")
         X = check_array(X)
-        return self.base_estimator_.predict_proba(X)
+
+        if self.n_classes_ == 2:
+            return self.base_estimator_.predict_proba(X, return_mean_and_variance=return_mean_and_variance)
+        else:
+            return self.base_estimator_.predict_proba(X)
 
     @property
     def kernel_(self):
