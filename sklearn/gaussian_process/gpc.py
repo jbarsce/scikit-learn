@@ -642,7 +642,7 @@ class GaussianProcessClassifier(BaseEstimator, ClassifierMixin):
         X = check_array(X)
         return self.base_estimator_.predict(X)
 
-    def predict_proba(self, X, return_mean_and_variance=False):
+    def predict_proba(self, X, return_mean_variance=False):
         """Return probability estimates for the test vector X.
 
         Parameters
@@ -650,8 +650,8 @@ class GaussianProcessClassifier(BaseEstimator, ClassifierMixin):
         X : array-like, shape = (n_samples, n_features)
             Query points where the GP is evaluated
 
-        return_mean_and_variance: bool, default: False
-            If True and the number of classes is 2, the mean
+        return_mean_variance: bool, default: False
+            If True and the number of classes is two, the mean
             and the variance of the predictive distribution
             at the query points are returned.
 
@@ -670,7 +670,7 @@ class GaussianProcessClassifier(BaseEstimator, ClassifierMixin):
         X = check_array(X)
 
         if self.n_classes_ == 2:
-            return self.base_estimator_.predict_proba(X, return_mean_and_variance=return_mean_and_variance)
+            return self.base_estimator_.predict_proba(X, return_mean_variance=return_mean_variance)
         else:
             return self.base_estimator_.predict_proba(X)
 
